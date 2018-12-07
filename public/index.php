@@ -2,6 +2,10 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
+use function Stringy\create as s;
+
+$repo = new Repository();
+
 $configuration = [
     'settings' => [
         'displayErrorDetalis' => true,
@@ -9,7 +13,21 @@ $configuration = [
 ];
 
 $app = new \Slim\App($configuration);
-$repo = new Repository();
+
+$container = $app->getContainer();
+$container['renderer'] = new \Slim\Views\PhpRenderer(__DIR__ . '/../templates');
+
+$app->get('/', function ($request, $response) {
+    return $this->renderer-render($response, 'index.phtml');
+});
+
+$app->get('/courses',function ($request, $response) use ($repo) {
+    $params = [
+        'courses' => $repo->all()
+    ];
+    return $this->renderer->render($response, 'courses/index.phtml', $params);
+});
+
 
 $app->post('/users', function ($request, $response) use ($repo) {
     $validator = new Validator();
